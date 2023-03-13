@@ -1,6 +1,6 @@
 package com.sparkfast.spark.sink
 
-import com.sparkfast.core.util.Asserter
+import com.sparkfast.core.util.{Asserter, ReflectUtil}
 import com.sparkfast.core.logger.LoggerMixin
 import com.sparkfast.spark.app.config.SinkDef
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
@@ -25,7 +25,7 @@ abstract class BaseSink(sinkDef: SinkDef) extends LoggerMixin {
     log.info (s"With format: $formatName")
   }
 
-  protected def applySchema(writer: DataFrameWriter[Row]): Unit
+  protected def applySchema(writer: DataFrameWriter[Row]): Unit = {}
 
   protected def applyOptions(writer: DataFrameWriter[Row]): Unit = {
     if (sinkDef.options != null) {
@@ -41,6 +41,8 @@ abstract class BaseSink(sinkDef: SinkDef) extends LoggerMixin {
     }
   }
 
+  protected def applyBucketBy(writer: DataFrameWriter[Row]): Unit = {}
+
   protected def applySaveMode(writer: DataFrameWriter[Row]): Unit = {
     if (sinkDef.saveMode != null) {
       writer.mode(sinkDef.saveMode)
@@ -51,6 +53,7 @@ abstract class BaseSink(sinkDef: SinkDef) extends LoggerMixin {
   protected def saveDataFrame(writer: DataFrameWriter[Row]): Unit
 
   def validate(): Unit = {
+    log.info(s"Sink definition: ${ReflectUtil.prettyCaseClass(sinkDef)}")
     Asserter.assert(sinkDef.toTable == null ^ sinkDef.toPath == null,
       "Exactly one of toTable or toPath parameters is allowed", log)
     Asserter.assert(sinkDef.format != null, "format must be configured", log)
@@ -65,6 +68,7 @@ abstract class BaseSink(sinkDef: SinkDef) extends LoggerMixin {
     applySchema(writer)
     applyOptions(writer)
     applyPartitionBy(writer)
+    applyBucketBy(writer)
     applySaveMode(writer)
     saveDataFrame(writer)
   }

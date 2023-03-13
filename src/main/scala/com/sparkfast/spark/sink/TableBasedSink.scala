@@ -16,7 +16,7 @@ class TableBasedSink(sinkDef: SinkDef) extends BaseSink(sinkDef) {
     SupportedSinkFormat.ORC,
     SupportedSinkFormat.HIVE,
     SupportedSinkFormat.DELTA,
-    SupportedSinkFormat.ICEBERG,
+    SupportedSinkFormat.ICEBERG
   )
 
   override def validate(): Unit = {
@@ -28,9 +28,21 @@ class TableBasedSink(sinkDef: SinkDef) extends BaseSink(sinkDef) {
     for (p <- List("schema", "schemaFile"))
       if (ReflectUtil.getFieldValueByName(sinkDef, p) != null) log.warn(
         s"Parameter $p is configured but will be ignored when sink to table")
+    if (sinkDef.bucketBy == null && sinkDef.sortBy != null) log.warn(
+      "Parameter sortBy is configured but will be ignored because it is only applicable when bucketBy is set")
   }
 
-  override protected def applySchema(writer: DataFrameWriter[Row]): Unit = {}
+  override protected def applyBucketBy(writer: DataFrameWriter[Row]): Unit = {
+    if (sinkDef.bucketBy != null) {
+      Asserter.assert(sinkDef.bucketBy.columns.nonEmpty, "bucket columns must contain at least one", log)
+      writer.bucketBy(sinkDef.bucketBy.num, sinkDef.bucketBy.columns.head, sinkDef.bucketBy.columns.slice(1, sinkDef.bucketBy.columns.length): _*)
+      log.info(s"With bucketBy: ${sinkDef.bucketBy}")
+      if (sinkDef.sortBy != null && sinkDef.sortBy.isEmpty) {
+        writer.sortBy(sinkDef.sortBy.head, sinkDef.sortBy.slice(1, sinkDef.sortBy.length): _*)
+        log.info(s"With sortBy: ${sinkDef.sortBy}")
+      }
+    }
+  }
 
   override protected def saveDataFrame(writer: DataFrameWriter[Row]): Unit = {
     writer.saveAsTable(sinkDef.toTable)

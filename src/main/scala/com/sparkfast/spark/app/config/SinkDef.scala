@@ -2,7 +2,7 @@ package com.sparkfast.spark.app.config
 
 import com.fasterxml.jackson.annotation.{JsonIgnoreProperties, JsonProperty}
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.sparkfast.core.jackson.seder.{SeqStringSoftSafeDeserializer, StringHardSafeDeserializer}
+import com.sparkfast.core.jackson.seder.{SeqStringHardSafeDeserializer, SeqStringSoftSafeDeserializer, StringHardSafeDeserializer}
 import org.apache.spark.sql.SaveMode
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,10 +20,14 @@ case class SinkDef(
   saveMode: SaveMode,
   @JsonDeserialize(using = classOf[SeqStringSoftSafeDeserializer])
   partitionBy: List[String],
+  bucketBy: BucketByDef,
+  @JsonDeserialize(using = classOf[SeqStringSoftSafeDeserializer])
+  sortBy: List[String],
   options: Map[String, String],
   @JsonDeserialize(using = classOf[SeqStringSoftSafeDeserializer])
   schema: String,
   @JsonDeserialize(using = classOf[SeqStringSoftSafeDeserializer])
   schemaFile: String,
-  @JsonDeserialize(using = classOf[StringHardSafeDeserializer]) queryName: String
+  @JsonDeserialize(using = classOf[StringHardSafeDeserializer])
+  queryName: String
 )

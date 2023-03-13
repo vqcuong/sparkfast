@@ -18,7 +18,8 @@ class FileBasedSink(sinkDef: SinkDef) extends BaseSink(sinkDef) {
     SupportedSinkFormat.JSON,
     SupportedSinkFormat.AVRO,
     SupportedSinkFormat.PARQUET,
-    SupportedSinkFormat.ORC
+    SupportedSinkFormat.ORC,
+    SupportedSinkFormat.DELTA
   )
 
   private def loadAvroSchema(): String = {
@@ -36,10 +37,13 @@ class FileBasedSink(sinkDef: SinkDef) extends BaseSink(sinkDef) {
       s"format must be one of following values: " +
         s"${supportedFileSinkFormats.map(_.name().toLowerCase).mkString(", ")}", log)
     if (sinkDef.format != SupportedSinkFormat.AVRO) {
-      for (p <- List("schema", "schemaFile"))
+      for (p <- List("schema", "schemaFile", "bucketBy", "sortBy"))
         if (ReflectUtil.getFieldValueByName(sinkDef, p) != null) log.warn(
-          s"Parameter $p is configured but will be ignored because it is only applicable for only avro sink format")
+          s"Parameter $p is configured but will be ignored because it is only applicable for only avro sink")
     }
+    for (p <- List("bucketBy", "sortBy"))
+      if (ReflectUtil.getFieldValueByName(sinkDef, p) != null) log.warn(
+        s"Parameter $p is configured but will be ignored because it is only applicable for only table-based sink")
   }
 
   override protected def applySchema(writer: DataFrameWriter[Row]): Unit = {

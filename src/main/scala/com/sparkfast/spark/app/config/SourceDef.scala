@@ -17,5 +17,7 @@ case class SourceDef (
   @JsonDeserialize(using = classOf[StringSoftSafeDeserializer])
   schemaFile: String,
   @JsonDeserialize(using = classOf[StringHardSafeDeserializer])
-  tempView: String
+  tempView: String,
+  storageLevel: SupportedStorageLevel = null,
+  cache: Option[Boolean] = None,
 )

@@ -12,4 +12,6 @@ case class SqlDef(
   sql: String,
   @JsonDeserialize(using = classOf[StringSoftSafeDeserializer])
   tempView: String,
+  storageLevel: SupportedStorageLevel = null,
+  cache: Option[Boolean] = None,
 )

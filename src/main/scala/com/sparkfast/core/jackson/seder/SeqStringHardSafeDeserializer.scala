@@ -24,7 +24,7 @@ class SeqStringHardSafeDeserializer extends StdDeserializer[List[String]](classO
         }
         val values = valuesBuf.toList.filter(_ != null).map(_.trim).filter(_.nonEmpty)
         if (values.isEmpty) {
-          throw new RuntimeException("List of string must be configured correctly without null or blank string")
+          throw new RuntimeException("List of string must be not empty and do not contain null or blank string")
         }
         values
       }
@@ -33,7 +33,7 @@ class SeqStringHardSafeDeserializer extends StdDeserializer[List[String]](classO
         if (StringUtil.isSafeString(v)) {
           List(v)
         } else {
-          throw new RuntimeException("List of string must be configured correctly without null or blank string")
+          throw new RuntimeException("List of string must be not empty and do not contain null or blank string")
         }
       }
     }

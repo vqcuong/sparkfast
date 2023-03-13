@@ -37,8 +37,6 @@ class TableBasedSource(sourceDef: SourceDef) extends BaseSource(sourceDef) {
         s"Parameter $p is configured but will be ignored when read from table")
   }
 
-  override protected def applySchema(reader: DataFrameReader): Unit = {}
-
   override protected def loadDataFrame(reader: DataFrameReader): DataFrame = {
     val df = reader.table(sourceDef.fromTable)
     val viewName = StringUtil.coalesceSafeString(sourceDef.tempView,
