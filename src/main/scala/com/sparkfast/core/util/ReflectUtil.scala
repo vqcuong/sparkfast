@@ -1,10 +1,13 @@
 package com.sparkfast.core.util
 
+
+
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe.TypeTag
+import scala.reflect.runtime.universe.{TypeTag, Type, runtimeMirror}
 
 //noinspection ScalaWeakerAccess
 object ReflectUtil {
+
   def getFieldValueByName[T <: AnyRef](t: T, fieldName: String): AnyRef = {
     val field = t.getClass.getDeclaredField(fieldName)
     field.setAccessible(true)
@@ -17,15 +20,25 @@ object ReflectUtil {
     instanceMirror.symbol.isCaseClass
   }
 
-  def prettyCaseClass[T <: AnyRef](t: T)(implicit tt: TypeTag[T], ct: ClassTag[T]): String = {
-    val className = ct.runtimeClass.getSimpleName
-    val members = tt.tpe.members.collect {
-      case m if m.isMethod && m.asMethod.isCaseAccessor => m.asMethod
+  def prettyCaseClass[V](v: V, t: Type = null)(implicit tt: TypeTag[V], ct: ClassTag[V]): String = {
+    val className = if (t != null) t.typeSymbol.name else tt.tpe.typeSymbol.name
+    val tMirror = tt.mirror.reflect(v)
+    val tpe = if (t != null) t else tt.tpe
+    val valueString = tpe.members.filter(!_.isMethod).map { member =>
+      val memberValue = tMirror.reflectField(member.asTerm).get
+      if (member.typeSignature.typeSymbol.asClass.isCaseClass) {
+        val prettyMemberValue = prettyCaseClass(
+          memberValue,
+          t = member.typeSignature.typeSymbol.asClass.selfType
+        )
+        Tuple2(member.name.toString.strip(), prettyMemberValue)
+      } else {
+        Tuple2(member.name.toString.strip(), memberValue)
+      }
     }
-    val valueString = members.map { member =>
-      val memberValue = tt.mirror.reflect(t).reflectMethod(member)()
-      s"${member.name} = $memberValue"
-    }.mkString(", ")
-    s"$className(" + valueString + ")"
+      .toList.sortBy(_._1)
+      .map { t => s"${t._1} = ${t._2}"}
+      .mkString(", ")
+    s"$className(" + valueString +")"
   }
 }
