@@ -1,0 +1,100 @@
+plugins {
+    id("com.github.johnrengelman.shadow").version("5.1.0")
+    id("scala")
+    id("java")
+    id("idea")
+    id("application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+group("com.sparkfast")
+version("1.0")
+
+project.ext {
+    set("junitVersion", "5.9.2")
+    set("scalaVersion", "2.12")
+    set("scalaMinorVersion", "2.12.15")
+    set("log4jVersion", "2.11.2")
+    set("slf4jVersion","1.7.32")
+    set("sparkVersion", "3.3.2")
+    set("jacksonVersion", "2.13.4")
+    set("kafkaVersion", "3.4.0")
+    set("deltaVersion", "2.2.0")
+    set("icebergVersion", "1.1.0")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly("org.scala-lang:scala-library:${project.ext.get('scalaMinorVersion')}")
+    compileOnly("org.scala-lang:scala-reflect:${project.ext.get('scalaMinorVersion')}")
+
+    compileOnly("org.apache.logging.log4j:log4j-core:${project.ext.get('log4jVersion')}")
+    compileOnly("org.apache.logging.log4j:log4j-api:${project.ext.get('log4jVersion')}")
+    compileOnly("org.apache.logging.log4j:log4j-slf4j-impl:${project.ext.get('log4jVersion')}")
+    compileOnly("org.slf4j:slf4j-api:${project.ext.get('slf4jVersion')}")
+
+    compileOnly("org.apache.spark:spark-core_${project.ext.get('scalaVersion')}:${project.ext.get('sparkVersion')}")
+    compileOnly("org.apache.spark:spark-sql_${project.ext.get('scalaVersion')}:${project.ext.get('sparkVersion')}")
+    compileOnly("io.delta:delta-core_${project.ext.get('scalaVersion')}:${project.ext.get('deltaVersion')}")
+    compileOnly("org.apache.iceberg:iceberg-spark-runtime-3.3_${project.ext.get('scalaVersion')}:${project.ext.get('icebergVersion')}")
+
+    compileOnly("com.fasterxml.jackson.core:jackson-core:${project.ext.get('jacksonVersion')}")
+    compileOnly("com.fasterxml.jackson.core:jackson-annotations:${project.ext.get("jacksonVersion")}")
+    compileOnly("com.fasterxml.jackson.core:jackson-databind:${project.ext.get('jacksonVersion')}")
+    compileOnly("com.fasterxml.jackson.module:jackson-module-scala_${project.ext.get('scalaVersion')}:${project.ext.get('jacksonVersion')}")
+    compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${project.ext.get('jacksonVersion')}")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-avro:${project.ext.get('jacksonVersion')}")
+
+    implementation("com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.11")
+    implementation("org.apache.kafka:kafka-clients:${project.ext.get('kafkaVersion')}")
+    implementation("com.auth0:java-jwt:4.3.0")
+    implementation("com.github.scopt:scopt_${project.ext.get('scalaVersion')}:4.1.0")
+    implementation("com.typesafe:config:1.4.2")
+    implementation("joda-time:joda-time:2.12.2")
+    implementation("org.redisson:redisson:3.19.3")
+    implementation("redis.clients:jedis:4.3.1")
+
+    testImplementation("org.scala-lang:scala-library:${project.ext.get('scalaMinorVersion')}")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:${project.ext.get('junitVersion')}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.get('junitVersion')}")
+    testImplementation("org.apache.spark:spark-core_${project.ext.get('scalaVersion')}:${project.ext.get('sparkVersion')}")
+    testImplementation("org.apache.spark:spark-sql_${project.ext.get('scalaVersion')}:${project.ext.get('sparkVersion')}")
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClassName = "com.sparkfast.spark.app.SparkFastAppRunner"
+}
+
+jar {
+    zip64(true)
+    archiveFileName.set("sparkfast.jar")
+}
+
+shadowJar {
+    zip64(true)
+    archiveFileName.set("sparkfast-with-dependencies.jar")
+    relocate("com.example", "ignore.com.example")
+    mergeServiceFiles()
+    exclude("application.yaml")
+    with jar
+}
+
+tasks.withType(ScalaCompile).configureEach {
+    scalaCompileOptions.forkOptions.with {
+        memoryMaximumSize = "1g"
+    }
+    scalaCompileOptions.with {
+        force = true
+    }
+}

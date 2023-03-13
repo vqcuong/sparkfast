@@ -1,0 +1,11 @@
+.DS_Store
+.idea
+.eclipse
+.maven
+.mvn
+.build
+.deploy
+.gradle
+
+build
+target
