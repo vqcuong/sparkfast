@@ -53,7 +53,7 @@ abstract class BaseSink(sinkDef: SinkDef) extends LoggerMixin {
   protected def saveDataFrame(writer: DataFrameWriter[Row]): Unit
 
   def validate(): Unit = {
-    log.info(s"Sink definition: ${ReflectUtil.prettyCaseClass(sinkDef)}")
+    log.info(s"Sink definition: $sinkDef")
     Asserter.assert(sinkDef.toTable == null ^ sinkDef.toPath == null,
       "Exactly one of toTable or toPath parameters is allowed", log)
     Asserter.assert(sinkDef.format != null, "format must be configured", log)

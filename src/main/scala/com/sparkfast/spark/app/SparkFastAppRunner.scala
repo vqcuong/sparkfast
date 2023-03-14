@@ -7,7 +7,7 @@ import com.sparkfast.spark.app.config.AppConfLoader
 object SparkFastAppRunner extends LoggerMixin {
   def main(args: Array[String]): Unit = {
     val appParams = SparkFastAppParamsParser.parse(args)
-    log.info(s"Running sparkfast application with ${ReflectUtil.prettyCaseClass(appParams)}")
+    log.info(s"Running sparkfast application with $appParams")
     if (appParams.configFile != null) {
       val appConf = AppConfLoader.loadFromFile(appParams.configFile)
       val app = new SparkFastApp(appConf)
