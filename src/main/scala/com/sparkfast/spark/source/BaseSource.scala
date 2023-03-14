@@ -42,7 +42,7 @@ abstract class BaseSource(sourceDef: SourceDef) extends LoggerMixin {
   }
 
   def validate(): Unit = {
-    log.info(s"Sink definition: $sourceDef")
+    log.info(s"Source definition: $sourceDef")
     Asserter.assert(sourceDef.fromTable == null ^ sourceDef.fromPath == null,
       "Exactly one of fromTable or fromPath parameters is allowed", log)
   }
