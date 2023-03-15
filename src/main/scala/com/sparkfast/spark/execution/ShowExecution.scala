@@ -1,11 +1,11 @@
 package com.sparkfast.spark.execution
 
 import com.sparkfast.core.logger.LoggerMixin
-import com.sparkfast.spark.app.config.ShowItemDef
+import com.sparkfast.spark.app.config.ShowItemConf
 import org.apache.spark.sql.SparkSession
 
 object ShowExecution extends LoggerMixin {
-  def execute(spark: SparkSession, showItemDefs: List[ShowItemDef]): Unit = {
+  def execute(spark: SparkSession, showItemDefs: List[ShowItemConf]): Unit = {
     for (showItemDef <- showItemDefs) {
       var msg = ""
       val df = if (showItemDef.sql != null) {

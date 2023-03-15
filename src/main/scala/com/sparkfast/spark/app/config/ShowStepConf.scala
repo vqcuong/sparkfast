@@ -2,7 +2,8 @@ package com.sparkfast.spark.app.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-case class QueryStepDef(
+
+case class ShowStepConf(
   @JsonProperty(required = true)
-  sqls: List[SqlDef]
-) extends StepDef(`type` = "query")
+  items: List[ShowItemConf]
+) extends StepConf(`type` = "show")

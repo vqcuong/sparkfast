@@ -1,11 +1,11 @@
 package com.sparkfast.spark.sink
 
-import com.sparkfast.spark.app.config.SinkDef
+import com.sparkfast.spark.app.config.SinkConf
 
 object SinkInitializer {
-  def makeSink(sinkDef: SinkDef): BaseSink = {
-    val sink: BaseSink = if (sinkDef.toTable != null)
-      new TableBasedSink(sinkDef) else new FileBasedSink(sinkDef)
+  def makeSink(sinkConf: SinkConf): BaseSink = {
+    val sink: BaseSink = if (sinkConf.toTable != null)
+      new TableBasedSink(sinkConf) else new FileBasedSink(sinkConf)
     sink.validate()
     sink
   }

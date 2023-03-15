@@ -6,7 +6,7 @@ import com.sparkfast.core.jackson.seder.{StringHardSafeDeserializer, StringSoftS
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-case class SqlDef(
+case class SqlConf(
   @JsonProperty(required = true)
   @JsonDeserialize(using = classOf[StringHardSafeDeserializer])
   sql: String,

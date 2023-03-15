@@ -1,14 +1,14 @@
 package com.sparkfast.spark.source
 
 import com.sparkfast.core.util.Asserter
-import com.sparkfast.spark.app.config.{SourceDef, SupportedSourceFormat}
+import com.sparkfast.spark.app.config.{SourceConf, SupportedSourceFormat}
 import org.apache.avro.Schema
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
 
 import java.io.File
 
-class FileBasedSource(sourceDef: SourceDef) extends BaseSource(sourceDef) {
+class FileBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
   override protected val sourceType: String = "file-based"
 
   private val supportedFileSourceFormats = List(
@@ -22,9 +22,9 @@ class FileBasedSource(sourceDef: SourceDef) extends BaseSource(sourceDef) {
   )
 
   private def loadJsonSchema(): String = {
-    if (sourceDef.schema != null) sourceDef.schema
-    else if (sourceDef.schemaFile != null) {
-      val fileSource = scala.io.Source.fromFile(sourceDef.schemaFile)
+    if (sourceConf.schema != null) sourceConf.schema
+    else if (sourceConf.schemaFile != null) {
+      val fileSource = scala.io.Source.fromFile(sourceConf.schemaFile)
       val fileContent = fileSource.getLines().mkString
       fileSource.close
       fileContent
@@ -38,22 +38,22 @@ class FileBasedSource(sourceDef: SourceDef) extends BaseSource(sourceDef) {
   }
 
   private def loadAvroSchema(): String = {
-    if (sourceDef.format != SupportedSourceFormat.AVRO) null
-    else if (sourceDef.schemaFile != null) {
-      val avroSchema = new Schema.Parser().parse(new File(sourceDef.schemaFile))
+    if (sourceConf.format != SupportedSourceFormat.AVRO) null
+    else if (sourceConf.schemaFile != null) {
+      val avroSchema = new Schema.Parser().parse(new File(sourceConf.schemaFile))
       avroSchema.toString
-    } else sourceDef.schema
+    } else sourceConf.schema
   }
 
   override def validate(): Unit = {
     super.validate()
-    Asserter.assert(sourceDef.fromPath != null, "fromPath must be configured")
-    Asserter.assert(sourceDef.format != null && supportedFileSourceFormats.contains(sourceDef.format),
+    Asserter.assert(sourceConf.fromPath != null, "fromPath must be configured")
+    Asserter.assert(sourceConf.format != null && supportedFileSourceFormats.contains(sourceConf.format),
       s"format must be one of following values: " +
         s"${supportedFileSourceFormats.map(_.name().toLowerCase).mkString(", ")}", log)
-    Asserter.assert(sourceDef.tempView != null,
+    Asserter.assert(sourceConf.tempView != null,
       "tempView must be configured explicitly when read from path", log)
-    Asserter.assert(sourceDef.schema == null || sourceDef.schemaFile == null,
+    Asserter.assert(sourceConf.schema == null || sourceConf.schemaFile == null,
       "Only one of schema or schemaFile parameters is allowed", log)
   }
 
@@ -72,10 +72,10 @@ class FileBasedSource(sourceDef: SourceDef) extends BaseSource(sourceDef) {
   }
 
   override protected def loadDataFrame(reader: DataFrameReader): DataFrame = {
-    val df = if (List(SupportedSourceFormat.DELTA, SupportedSourceFormat.ICEBERG).contains(sourceDef.format))
-      reader.load(sourceDef.fromPath.head) else reader.load(sourceDef.fromPath: _*)
-    df.createOrReplaceTempView(sourceDef.tempView)
-    log.info(s"Successfully loaded dataframe and assign as temp view: ${sourceDef.tempView}")
+    val df = if (List(SupportedSourceFormat.DELTA, SupportedSourceFormat.ICEBERG).contains(sourceConf.format))
+      reader.load(sourceConf.fromPath.head) else reader.load(sourceConf.fromPath: _*)
+    df.createOrReplaceTempView(sourceConf.tempView)
+    log.info(s"Successfully loaded dataframe and assign as temp view: ${sourceConf.tempView}")
     df
   }
 }

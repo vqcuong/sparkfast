@@ -2,16 +2,16 @@ package com.sparkfast.spark.source
 
 import com.sparkfast.core.util.{Asserter, ReflectUtil}
 import com.sparkfast.core.logger.LoggerMixin
-import com.sparkfast.spark.app.config.{SourceDef, StorageLevelMapper, SupportedStorageLevel}
+import com.sparkfast.spark.app.config.{SourceConf, StorageLevelMapper, SupportedStorageLevel}
 import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
 
 //noinspection ScalaWeakerAccess
-abstract class BaseSource(sourceDef: SourceDef) extends LoggerMixin {
+abstract class BaseSource(sourceConf: SourceConf) extends LoggerMixin {
   protected val sourceType: String
 
   protected def applyFormat(reader: DataFrameReader): Unit = {
-    if (sourceDef.format != null) {
-      val formatName = sourceDef.format.name().toLowerCase
+    if (sourceConf.format != null) {
+      val formatName = sourceConf.format.name().toLowerCase
       reader.format(formatName)
       log.info(s"With format: $formatName")
     }
@@ -20,30 +20,30 @@ abstract class BaseSource(sourceDef: SourceDef) extends LoggerMixin {
   protected def applySchema(reader: DataFrameReader): Unit = {}
 
   protected def applyOptions(reader: DataFrameReader): Unit = {
-    if (sourceDef.options != null) {
-      reader.options(sourceDef.options)
-      log.info(s"With options: ${sourceDef.options}")
+    if (sourceConf.options != null) {
+      reader.options(sourceConf.options)
+      log.info(s"With options: ${sourceConf.options}")
     }
   }
 
   protected def loadDataFrame(reader: DataFrameReader): DataFrame
 
   def applyCache(df: DataFrame): DataFrame = {
-    if (sourceDef.cache.isDefined) {
-      if (sourceDef.cache.get) {
+    if (sourceConf.cache.isDefined) {
+      if (sourceConf.cache.get) {
         df.cache()
         log.info(s"With enabling cache")
       }
-    } else if (sourceDef.storageLevel != null && sourceDef.storageLevel != SupportedStorageLevel.NONE) {
-      df.persist(StorageLevelMapper.get(sourceDef.storageLevel))
-      log.info(s"With persist on storage level: ${sourceDef.storageLevel.name()}")
+    } else if (sourceConf.storageLevel != null && sourceConf.storageLevel != SupportedStorageLevel.NONE) {
+      df.persist(StorageLevelMapper.get(sourceConf.storageLevel))
+      log.info(s"With persist on storage level: ${sourceConf.storageLevel.name()}")
     }
     df
   }
 
   def validate(): Unit = {
-    log.info(s"Source definition: $sourceDef")
-    Asserter.assert(sourceDef.fromTable == null ^ sourceDef.fromPath == null,
+    log.info(s"Source definition: $sourceConf")
+    Asserter.assert(sourceConf.fromTable == null ^ sourceConf.fromPath == null,
       "Exactly one of fromTable or fromPath parameters is allowed", log)
   }
 

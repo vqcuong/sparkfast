@@ -28,7 +28,6 @@ object SparkFastAppParamsParser extends LoggerMixin {
       )
     }
     val appParamsOpts = OParser.parse(parser, args, AppParams())
-    Asserter.assert(appParamsOpts.isDefined)
     var appParams = appParamsOpts.get
     if (appParams.configFile == null) {
       appParams = appParams.copy(configFile = System.getProperty("app.conf.file"))

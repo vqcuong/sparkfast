@@ -3,7 +3,7 @@ package com.sparkfast.core.pool
 import com.sparkfast.core.logger.LoggerMixin
 import scala.collection.mutable
 
-trait ObjectPool[T] extends LoggerMixin {
+trait SimpleObjectPool[T] extends LoggerMixin {
   protected val objectName: String = this.getClass.getSimpleName
   protected val verbose: Boolean = true
   protected val expirationTime: Long = 60000L

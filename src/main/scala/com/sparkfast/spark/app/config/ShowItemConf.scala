@@ -6,7 +6,7 @@ import com.sparkfast.core.jackson.seder.StringHardSafeDeserializer
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-case class ShowItemDef (
+case class ShowItemConf(
   @JsonDeserialize(using = classOf[StringHardSafeDeserializer])
   sql: String,
   @JsonDeserialize(using = classOf[StringHardSafeDeserializer])

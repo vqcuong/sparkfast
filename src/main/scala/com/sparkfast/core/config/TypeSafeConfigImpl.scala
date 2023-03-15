@@ -7,7 +7,7 @@ import scala.collection.JavaConverters._
 import java.io.{File, IOException}
 
 trait TypeSafeConfigImpl extends LoggerMixin {
-  protected val defaultConfigResource: String = "src/resources/conf/default.conf"
+  protected val defaultConfigResource: String = "conf/typesafe-default.conf"
   private final lazy val defaultConfig: Config = getDefaultConfig
   private var config: Config = defaultConfig
 

@@ -1,19 +1,18 @@
 package com.sparkfast.core.util
 
+import com.sparkfast.core.logger.LoggerMixin
 import org.slf4j.Logger
 
-object Asserter {
+
+object Asserter extends LoggerMixin {
 
   private class FailedAssertionError(msg: String, ex: Throwable = null) extends Exception(msg, ex)
 
-  def assert(assertion: Boolean, falseMsg: String = null, logger: Logger = null): Unit = {
+  def assert(assertion: Boolean, falseMsg: Any = null, logger: Logger = null): Unit = {
     if (!assertion) {
-      if (falseMsg != null) {
-        if (logger != null) logger.error(falseMsg)
-        throw new FailedAssertionError(falseMsg)
-      } else {
-        throw new FailedAssertionError("Got a failed assertion")
-      }
+      val msg = "Assertion failed" + (if (falseMsg != null) ": " + falseMsg else "")
+      if (logger != null) logger.error(msg) else log.error(msg)
+      throw new FailedAssertionError(msg)
     }
   }
 }

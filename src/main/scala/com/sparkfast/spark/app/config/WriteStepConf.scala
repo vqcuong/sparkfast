@@ -3,7 +3,7 @@ package com.sparkfast.spark.app.config
 import com.fasterxml.jackson.annotation.JsonProperty
 
 
-case class WriteStepDef(
+case class WriteStepConf(
   @JsonProperty(required = true)
-  sinks: List[SinkDef]
-) extends StepDef(`type` = "write")
+  sinks: List[SinkConf]
+) extends StepConf(`type` = "write")

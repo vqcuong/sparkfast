@@ -1,12 +1,12 @@
 package com.sparkfast.spark.execution
 
 import com.sparkfast.core.logger.LoggerMixin
-import com.sparkfast.spark.app.config.{SqlDef, StorageLevelMapper, SupportedStorageLevel}
+import com.sparkfast.spark.app.config.{SqlConf, StorageLevelMapper, SupportedStorageLevel}
 import org.apache.spark.sql.SparkSession
 
 object QueryExecution extends LoggerMixin {
 
-  def execute(spark: SparkSession, sqlDefs: List[SqlDef]): Unit = {
+  def execute(spark: SparkSession, sqlDefs: List[SqlConf]): Unit = {
     for (sqlDef <- sqlDefs) {
       var msg = s"Executed spark sql: \n${sqlDef.sql}"
       val df = spark.sql(sqlDef.sql)

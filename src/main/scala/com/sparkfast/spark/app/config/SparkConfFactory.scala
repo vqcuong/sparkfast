@@ -3,8 +3,8 @@ package com.sparkfast.spark.app.config
 import com.sparkfast.core.config.TypeSafeConfigImpl
 import org.apache.spark.SparkConf
 
-object SparkConfigFactory extends TypeSafeConfigImpl {
-  override val defaultConfigResource = "src/resources/conf/spark-runtime.conf"
+object SparkConfFactory extends TypeSafeConfigImpl {
+  override val defaultConfigResource = "conf/spark-runtime.conf"
   private val sparkConf = new SparkConf()
 
   this.applyFileConfig(System.getProperty("spark.runtime.file"))

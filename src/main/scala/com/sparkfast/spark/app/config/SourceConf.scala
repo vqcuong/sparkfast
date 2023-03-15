@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.sparkfast.core.jackson.seder.{SeqStringHardSafeDeserializer, StringHardSafeDeserializer, StringSoftSafeDeserializer}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-case class SourceDef (
+case class SourceConf(
   format: SupportedSourceFormat,
   @JsonDeserialize(using = classOf[SeqStringHardSafeDeserializer])
   fromPath: List[String],

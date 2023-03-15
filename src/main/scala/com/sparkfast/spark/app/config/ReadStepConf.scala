@@ -2,7 +2,7 @@ package com.sparkfast.spark.app.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-case class ReadStepDef(
+case class ReadStepConf(
   @JsonProperty(required = true)
-  sources: List[SourceDef]
-) extends StepDef(`type` = "read")
+  sources: List[SourceConf]
+) extends StepConf(`type` = "read")
