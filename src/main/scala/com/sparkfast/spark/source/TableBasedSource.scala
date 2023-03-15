@@ -5,10 +5,9 @@ import com.sparkfast.core.util.{ReflectUtil, StringUtil}
 import com.sparkfast.spark.app.config.{SourceConf, SupportedSourceFormat}
 import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
 
-class TableBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
-  override protected val sourceType: String = "table-based"
 
-  private val supportedTableSourceFormats = List(
+object TableBasedSource {
+  val SUPPORTED_FORMATS: List[SupportedSourceFormat] = List(
     SupportedSourceFormat.TEXT,
     SupportedSourceFormat.CSV,
     SupportedSourceFormat.JSON,
@@ -19,7 +18,9 @@ class TableBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
     SupportedSourceFormat.DELTA,
     SupportedSourceFormat.ICEBERG,
   )
+}
 
+class TableBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
   private def extractUnifiedTable: String = {
     sourceConf.fromTable.split("\\.").last.replace("`", "").strip()
   }
@@ -27,14 +28,14 @@ class TableBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
   override def validate(): Unit = {
     super.validate()
     Asserter.assert(sourceConf.fromTable != null, "fromTable must be configured", log)
-    Asserter.assert(sourceConf.format == null || supportedTableSourceFormats.contains(sourceConf.format),
+    Asserter.assert(sourceConf.format == null || TableBasedSource.SUPPORTED_FORMATS.contains(sourceConf.format),
       s"format must be not configured or is one of following values: " +
-        s"${supportedTableSourceFormats.map(_.name().toLowerCase).mkString(", ")}", log)
+        s"${TableBasedSource.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
     Asserter.assert(!extractUnifiedTable.contains("/") || sourceConf.tempView != null,
-      "Parameter tempView must be configured explicitly when fromTable contains path", log)
+      "parameter tempView must be configured explicitly when fromTable contains path", log)
     for (p <- List("schema", "schemaFile"))
       if (ReflectUtil.getFieldValueByName(sourceConf, p) != null) log.warn(
-        s"Parameter $p is configured but will be ignored when read from table")
+        s"parameter $p is configured but will be ignored when read from table")
   }
 
   override protected def loadDataFrame(reader: DataFrameReader): DataFrame = {

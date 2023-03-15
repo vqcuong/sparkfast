@@ -21,7 +21,7 @@ class SeqStringSoftSafeDeserializer extends StdDeserializer[List[String]](classO
           valuesBuf += p.getValueAsString()
           p.nextToken()
         }
-        val values = valuesBuf.toList.filter(_ != null).map(_.trim).filter(_.nonEmpty)
+        val values = valuesBuf.toList.filter(StringUtil.isSafeString)
         valuesBuf.clear()
         values
       }

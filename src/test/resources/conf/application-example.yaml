@@ -1,0 +1,110 @@
+appName: sparkfast-demo
+enableHiveSupport: true
+flow:
+  - type: read
+    sources:
+      - format: csv
+        fromPath: /raw/kaggle/world_economy/corruption.csv
+        options:
+          header: true
+        schema: |
+          {"type":"struct","fields":[{"name":"country","type":"string","nullable":true,"metadata":{}},{"name":"annual_income","type":"integer","nullable":true,"metadata":{}},{"name":"corruption_index","type":"integer","nullable":true,"metadata":{}}]}
+        tempView: corruption
+  - type: query
+    sqls:
+      - sql: set spark.sql.session.timeZone = UTC
+      - tempView: corruption_final
+        cache: true
+        sql: |
+          WITH
+          corruption_with_time AS (
+            SELECT
+              country,
+              annual_income,
+              corruption_index,
+              TIMESTAMP(UNIX_SECONDS(CURRENT_TIMESTAMP()) + cast(rand()*100000 AS INT)) AS updated_time,
+              CAST(RAND()*20 AS INT) as rand_key
+            from corruption)
+          SELECT
+            country,
+            annual_income,
+            corruption_index,
+            updated_time,
+            TO_DATE(updated_time) AS updated_date,
+            rand_key
+          FROM corruption_with_time
+  - type: show
+    items:
+      - tempView: corruption_final
+        limit: 50
+  - type: write
+    sinks:
+      - format: hive
+        fromTempViewOrTable: world_economy.unemployment
+        toTable: world_economy_dev.unemployment_hive
+        saveMode: overwrite
+        options:
+          fileFormat: orc
+      - format: delta
+        fromTempViewOrTable: corruption_final
+        toTable: world_economy_dev.corruption_delta
+        saveMode: overwrite
+      - format: delta
+        fromTempViewOrTable: corruption_final
+        toPath: /warehouse/world_economy_dev/corruption_delta
+        saveMode: overwrite
+      - format: json
+        fromTempViewOrTable: corruption_final
+        toTable: world_economy_dev.corruption_json
+        saveMode: append
+        options:
+          dateFormat: yyyyMMdd
+      - format: json
+        fromTempViewOrTable: corruption_final
+        toPath: /warehouse/world_economy_dev/corruption_json
+        saveMode: append
+        options:
+          dateFormat: yyyyMMdd
+      - format: csv
+        fromTempViewOrTable: world_economy.cost_of_living
+        toTable: world_economy_dev.cost_of_living_csv
+        saveMode: overwrite
+        options:
+          sep: "|"
+      - format: csv
+        fromTempViewOrTable: world_economy.cost_of_living
+        toPath: /warehouse/world_economy_dev/cost_of_living_csv
+        saveMode: overwrite
+        options:
+          sep: "|"
+      - format: parquet
+        fromTempViewOrTable: corruption_final
+        toTable: world_economy_dev.corruption_parquet
+        saveMode: append
+        partitionBy: [rand_key]
+        options:
+          compression: gzip
+      - format: parquet
+        fromTempViewOrTable: corruption_final
+        toPath: /warehouse/world_economy_dev/corruption_parquet
+        saveMode: append
+        partitionBy: [rand_key]
+        options:
+          compression: gzip
+      - format: orc
+        fromTempViewOrTable: corruption_final
+        toTable: world_economy_dev.corruption_orc
+        saveMode: overwrite
+        bucketBy:
+          num: 4
+          columns: [ rand_key ]
+        sortBy: [ rand_key ]
+        options:
+          compression: lz4
+      - format: orc
+        fromTempViewOrTable: corruption_final
+        toPath: /warehouse/world_economy_dev/corruption_orc
+        saveMode: overwrite
+        sortBy: [ rand_key ]
+        options:
+          compression: lz4

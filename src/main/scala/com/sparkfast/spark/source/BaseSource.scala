@@ -7,8 +7,6 @@ import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
 
 //noinspection ScalaWeakerAccess
 abstract class BaseSource(sourceConf: SourceConf) extends LoggerMixin {
-  protected val sourceType: String
-
   protected def applyFormat(reader: DataFrameReader): Unit = {
     if (sourceConf.format != null) {
       val formatName = sourceConf.format.name().toLowerCase
@@ -44,11 +42,10 @@ abstract class BaseSource(sourceConf: SourceConf) extends LoggerMixin {
   def validate(): Unit = {
     log.info(s"Source definition: $sourceConf")
     Asserter.assert(sourceConf.fromTable == null ^ sourceConf.fromPath == null,
-      "Exactly one of fromTable or fromPath parameters is allowed", log)
+      "exactly one of fromTable or fromPath parameters is allowed", log)
   }
 
   def load(spark: SparkSession): DataFrame = {
-    log.info(s"Loading from $sourceType source")
     val reader = spark.read
     applyFormat(reader)
     applySchema(reader)

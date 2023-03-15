@@ -12,6 +12,6 @@ import com.sparkfast.core.util.StringUtil
 class StringHardSafeDeserializer extends JsonDeserializer[String] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): String = {
     StringUtil.assertSafeString(p.getValueAsString.trim,
-      s"Field ${p.getCurrentName} must be not a null or blank string")
+      s"field ${p.getCurrentName} must be not a null or blank string")
   }
 }

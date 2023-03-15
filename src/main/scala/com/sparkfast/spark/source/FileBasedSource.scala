@@ -4,14 +4,13 @@ import com.sparkfast.core.util.Asserter
 import com.sparkfast.spark.app.config.{SourceConf, SupportedSourceFormat}
 import org.apache.avro.Schema
 import org.apache.spark.sql.types.{DataType, StructType}
-import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
+import org.apache.spark.sql.{DataFrame, DataFrameReader}
 
 import java.io.File
 
-class FileBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
-  override protected val sourceType: String = "file-based"
 
-  private val supportedFileSourceFormats = List(
+object FileBasedSource {
+  val SUPPORTED_FORMATS: List[SupportedSourceFormat] = List(
     SupportedSourceFormat.TEXT,
     SupportedSourceFormat.CSV,
     SupportedSourceFormat.JSON,
@@ -20,7 +19,9 @@ class FileBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
     SupportedSourceFormat.ORC,
     SupportedSourceFormat.DELTA
   )
+}
 
+class FileBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
   private def loadJsonSchema(): String = {
     if (sourceConf.schema != null) sourceConf.schema
     else if (sourceConf.schemaFile != null) {
@@ -48,13 +49,13 @@ class FileBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
   override def validate(): Unit = {
     super.validate()
     Asserter.assert(sourceConf.fromPath != null, "fromPath must be configured")
-    Asserter.assert(sourceConf.format != null && supportedFileSourceFormats.contains(sourceConf.format),
+    Asserter.assert(sourceConf.format != null && FileBasedSource.SUPPORTED_FORMATS.contains(sourceConf.format),
       s"format must be one of following values: " +
-        s"${supportedFileSourceFormats.map(_.name().toLowerCase).mkString(", ")}", log)
+        s"${FileBasedSource.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
     Asserter.assert(sourceConf.tempView != null,
       "tempView must be configured explicitly when read from path", log)
     Asserter.assert(sourceConf.schema == null || sourceConf.schemaFile == null,
-      "Only one of schema or schemaFile parameters is allowed", log)
+      "only one of schema or schemaFile parameters is allowed", log)
   }
 
   override protected def applySchema(reader: DataFrameReader): Unit = {

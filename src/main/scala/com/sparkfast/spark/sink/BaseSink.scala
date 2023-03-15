@@ -8,8 +8,6 @@ import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 
 //noinspection ScalaWeakerAccess
 abstract class BaseSink(sinkConf: SinkConf) extends LoggerMixin {
-  protected val sinkType: String
-
   protected def selectTempViewOrTable(spark: SparkSession): DataFrame = {
     val df = spark.sql(s"SELECT * FROM ${sinkConf.fromTempViewOrTable}")
     log.info(s"Select from ${sinkConf.fromTempViewOrTable}")
@@ -53,15 +51,14 @@ abstract class BaseSink(sinkConf: SinkConf) extends LoggerMixin {
   protected def saveDataFrame(writer: DataFrameWriter[Row]): Unit
 
   def validate(): Unit = {
-    log.info(s"Sink definition: $sinkConf")
+    log.info(s"sink definition: $sinkConf")
     Asserter.assert(sinkConf.toTable == null ^ sinkConf.toPath == null,
-      "Exactly one of toTable or toPath parameters is allowed", log)
+      "exactly one of toTable or toPath parameters is allowed", log)
     Asserter.assert(sinkConf.format != null, "format must be configured", log)
     Asserter.assert(sinkConf.fromTempViewOrTable != null, "fromTempViewOrTable must be configured", log)
   }
 
   def save(spark: SparkSession): Unit = {
-    log.info(s"Saving to $sinkType sink")
     val df = selectTempViewOrTable(spark)
     val writer = df.write
     applyFormat(writer)

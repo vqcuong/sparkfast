@@ -3,11 +3,11 @@ package com.sparkfast.spark.sink
 import com.sparkfast.core.util.Asserter
 import com.sparkfast.core.util.ReflectUtil
 import com.sparkfast.spark.app.config.{SinkConf, SupportedSinkFormat}
-import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
+import org.apache.spark.sql.{DataFrameWriter, Row}
 
-class TableBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
-  override protected val sinkType: String = "table-based"
-  private val supportedTableSinkFormats = List(
+
+object TableBasedSink {
+  val SUPPORTED_FORMATS: List[SupportedSinkFormat] = List(
     SupportedSinkFormat.TEXT,
     SupportedSinkFormat.CSV,
     SupportedSinkFormat.JSON,
@@ -18,18 +18,20 @@ class TableBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
     SupportedSinkFormat.DELTA,
     SupportedSinkFormat.ICEBERG
   )
+}
 
+class TableBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
   override def validate(): Unit = {
     super.validate()
     Asserter.assert(sinkConf.toTable != null, "toTable must be configured", log)
-    Asserter.assert(supportedTableSinkFormats.contains(sinkConf.format),
+    Asserter.assert(TableBasedSink.SUPPORTED_FORMATS.contains(sinkConf.format),
       s"format must be one of following values: " +
-        s"${supportedTableSinkFormats.map(_.name().toLowerCase).mkString(", ")}", log)
+        s"${TableBasedSink.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
     for (p <- List("schema", "schemaFile"))
       if (ReflectUtil.getFieldValueByName(sinkConf, p) != null) log.warn(
-        s"Parameter $p is configured but will be ignored when sink to table")
+        s"parameter $p is configured but will be ignored when sink to table")
     if (sinkConf.bucketBy == null && sinkConf.sortBy != null) log.warn(
-      "Parameter sortBy is configured but will be ignored because it is only applicable when bucketBy is set")
+      "parameter sortBy is configured but will be ignored because it is only applicable when bucketBy is set")
   }
 
   override protected def applyBucketBy(writer: DataFrameWriter[Row]): Unit = {

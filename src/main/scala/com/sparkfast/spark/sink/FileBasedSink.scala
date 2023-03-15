@@ -8,10 +8,8 @@ import org.apache.spark.sql.{DataFrameWriter, Row}
 import java.io.File
 
 
-class FileBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
-  override protected val sinkType: String = "file-based"
-
-  private val supportedFileSinkFormats = List(
+object FileBasedSink {
+  val SUPPORTED_FORMATS: List[SupportedSinkFormat] = List(
     SupportedSinkFormat.TEXT,
     SupportedSinkFormat.CSV,
     SupportedSinkFormat.JSON,
@@ -20,7 +18,9 @@ class FileBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
     SupportedSinkFormat.ORC,
     SupportedSinkFormat.DELTA
   )
+}
 
+class FileBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
   private def loadAvroSchema(): String = {
     if (sinkConf.format != SupportedSinkFormat.AVRO) null
     else if (sinkConf.schemaFile != null) {
@@ -32,17 +32,17 @@ class FileBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
   override def validate(): Unit = {
     super.validate()
     Asserter.assert(sinkConf.toPath != null, "toPath must be configured", log)
-    Asserter.assert(supportedFileSinkFormats.contains(sinkConf.format),
+    Asserter.assert(FileBasedSink.SUPPORTED_FORMATS.contains(sinkConf.format),
       s"format must be one of following values: " +
-        s"${supportedFileSinkFormats.map(_.name().toLowerCase).mkString(", ")}", log)
+        s"${FileBasedSink.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
     if (sinkConf.format != SupportedSinkFormat.AVRO) {
       for (p <- List("schema", "schemaFile", "bucketBy", "sortBy"))
         if (ReflectUtil.getFieldValueByName(sinkConf, p) != null) log.warn(
-          s"Parameter $p is configured but will be ignored because it is only applicable for only avro sink")
+          s"parameter $p is configured but will be ignored because it is only applicable for only avro sink")
     }
     for (p <- List("bucketBy", "sortBy"))
       if (ReflectUtil.getFieldValueByName(sinkConf, p) != null) log.warn(
-        s"Parameter $p is configured but will be ignored because it is only applicable for only table-based sink")
+        s"parameter $p is configured but will be ignored because it is only applicable for only table-based sink")
   }
 
   override protected def applySchema(writer: DataFrameWriter[Row]): Unit = {
