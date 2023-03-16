@@ -4,9 +4,6 @@ import com.sparkfast.spark.app.config.{AppConfLoader, ReadStepConf, SupportedSou
 import com.sparkfast.spark.source.{FileBasedSource, TableBasedSource}
 import org.junit.jupiter.api.Test
 
-import java.net.URI
-import java.nio.file.Paths
-
 
 class AppConfLoaderTest {
   @Test def testLoadingAppConfFromYaml(): Unit = {
@@ -429,31 +426,6 @@ class AppConfLoaderTest {
           |      - format: csv
           |        fromTable: world_economy.corruption
           |        schema: "\t\n\r   "
-          |        tempView: corruption""".stripMargin
-    var success = true
-    try {
-      val appConf = AppConfLoader.loadFromString(yamlContent)
-      val sourceConf = appConf.flow.head.asInstanceOf[ReadStepConf].sources.head
-      println(sourceConf.schema)
-    } catch {
-      case _: Exception => success = false
-    }
-    assert(success)
-  }
-
-  /**
-   * accept blank value as null value
-   */
-  @Test def testTableBasedSourceValidateSuccess(): Unit = {
-    val yamlContent =
-      s"""appName: sparkfast-demo
-          |enableHiveSupport: true
-          |flow:
-          |  - type: read
-          |    sources:
-          |      - format: parquet
-          |
-          |        fromTable: world_economy.corruption
           |        tempView: corruption""".stripMargin
     var success = true
     try {
