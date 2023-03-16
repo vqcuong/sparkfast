@@ -50,10 +50,10 @@ class FileBasedSource(sourceConf: SourceConf) extends BaseSource(sourceConf) {
     super.validate()
     Asserter.assert(sourceConf.fromPath != null, "fromPath must be configured")
     Asserter.assert(sourceConf.format != null && FileBasedSource.SUPPORTED_FORMATS.contains(sourceConf.format),
-      s"format must be one of following values: " +
+      s"parameter format must be one of following values: " +
         s"${FileBasedSource.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
     Asserter.assert(sourceConf.tempView != null,
-      "tempView must be configured explicitly when read from path", log)
+      "parameter tempView must be configured explicitly when read from path", log)
     Asserter.assert(sourceConf.schema == null || sourceConf.schemaFile == null,
       "only one of schema or schemaFile parameters is allowed", log)
   }

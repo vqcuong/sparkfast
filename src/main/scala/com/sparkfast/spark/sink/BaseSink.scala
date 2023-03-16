@@ -54,8 +54,8 @@ abstract class BaseSink(sinkConf: SinkConf) extends LoggerMixin {
     log.info(s"sink definition: $sinkConf")
     Asserter.assert(sinkConf.toTable == null ^ sinkConf.toPath == null,
       "exactly one of toTable or toPath parameters is allowed", log)
-    Asserter.assert(sinkConf.format != null, "format must be configured", log)
-    Asserter.assert(sinkConf.fromTempViewOrTable != null, "fromTempViewOrTable must be configured", log)
+    Asserter.assert(sinkConf.format != null, "parameter format must be configured correctly", log)
+    Asserter.assert(sinkConf.fromTempViewOrTable != null, "parameter fromTempViewOrTable must be configured correctly", log)
   }
 
   def save(spark: SparkSession): Unit = {

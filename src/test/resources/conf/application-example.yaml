@@ -1,4 +1,4 @@
-appName: sparkfast-demo
+appName: example
 enableHiveSupport: true
 flow:
   - type: read

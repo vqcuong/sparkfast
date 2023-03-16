@@ -31,9 +31,9 @@ class FileBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
 
   override def validate(): Unit = {
     super.validate()
-    Asserter.assert(sinkConf.toPath != null, "toPath must be configured", log)
+    Asserter.assert(sinkConf.toPath != null, "parameter toPath must be configured correctly", log)
     Asserter.assert(FileBasedSink.SUPPORTED_FORMATS.contains(sinkConf.format),
-      s"format must be one of following values: " +
+      s"parameter format must be one of following values: " +
         s"${FileBasedSink.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
     if (sinkConf.format != SupportedSinkFormat.AVRO) {
       for (p <- List("schema", "schemaFile", "bucketBy", "sortBy"))

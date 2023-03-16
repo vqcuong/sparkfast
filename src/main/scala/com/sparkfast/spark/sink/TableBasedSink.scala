@@ -16,17 +16,28 @@ object TableBasedSink {
     SupportedSinkFormat.ORC,
     SupportedSinkFormat.HIVE,
     SupportedSinkFormat.DELTA,
-    SupportedSinkFormat.ICEBERG
   )
 }
 
 class TableBasedSink(sinkConf: SinkConf) extends BaseSink(sinkConf) {
+  private def extractUnifiedTable: String = {
+    sinkConf.toTable.split(".").last.replace("`", "").strip()
+  }
+
   override def validate(): Unit = {
     super.validate()
-    Asserter.assert(sinkConf.toTable != null, "toTable must be configured", log)
+    Asserter.assert(sinkConf.toTable != null, "parameter toTable must be configured correctly", log)
     Asserter.assert(TableBasedSink.SUPPORTED_FORMATS.contains(sinkConf.format),
-      s"format must be one of following values: " +
+      s"parameter format must be one of following values: " +
         s"${TableBasedSink.SUPPORTED_FORMATS.map(_.name().toLowerCase).mkString(", ")}", log)
+    if (sinkConf.format != SupportedSinkFormat.DELTA) {
+      Asserter.assert(!extractUnifiedTable.contains("/"),
+        s"parameter toTable: ${sinkConf.toTable} must be configured correctly when sink format is ${sinkConf.format}")
+    } else {
+      Asserter.assert(extractUnifiedTable.startsWith("/") || !extractUnifiedTable.contains("/"),
+        s"parameter toTable: ${sinkConf.toTable} must be configured correctly when sink format is ${sinkConf.format}")
+    }
+
     for (p <- List("schema", "schemaFile"))
       if (ReflectUtil.getFieldValueByName(sinkConf, p) != null) log.warn(
         s"parameter $p is configured but will be ignored when sink to table")
